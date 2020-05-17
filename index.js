@@ -6,11 +6,11 @@ const stand = () => document.getElementById('stand');
 const zone = () => document.getElementById('zone');
 
 function setPosition(element, left, top) {
-    element.style.left = `${Math.round(left)}px`;
-    element.style.top = `${Math.round(top)}px`;
+    element.style.left = `${left}px`;
+    element.style.top = `${top}px`;
 }
 
-async function setInitalPositions() {
+function setInitalPositions() {
     const layoutHeight = 450;
     const layoutWidth = 400;
     const layout = document.getElementById('layout').getBoundingClientRect();
@@ -54,7 +54,7 @@ async function main() {
     await moveRobot(robot(2), stand());
     await moveRobot(robot(3), conveyor(2));
 
-    while(true) {
+    while(!stopped) {
         await moveRobot(robot(3), stand());
         await moveRobot(robot(3), conveyor(2));
         await moveRobot(robot(2), stand());
