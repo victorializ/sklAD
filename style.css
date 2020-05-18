@@ -53,6 +53,7 @@ section {
 div[id^="robot"] {
     margin: 3px;
     font-size: 35px;
+    z-index: -1;
 }
 
 div[id^="conveyor"] {
