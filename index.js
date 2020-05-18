@@ -6,6 +6,7 @@ const RobotState = Object.freeze({ "empty": 1, "carrying": 2 });
 const RobotRole = Object.freeze({ "consuming": 1, "producing": 2, "invalid": 3 });
 
 const ConveyorCycleTime = 2500; // time in milliseconds
+const PaintingCycleTime = 2000; // time in milliseconds
 const fixedTimeStep = 10; // time in milliseconds
 
 let robot1;
@@ -52,6 +53,7 @@ class PaintingStation {
         this.state = ConveyorState.empty;
         this.dockedConsuming = null;
         this.dockedProducing = null;
+        this.score = 0;
     }
 
     update() {
@@ -66,12 +68,19 @@ class PaintingStation {
         }
 
         if (this.state == ConveyorState.filled) {
-            if (this.dockedConsuming != null) {
-                console.log("docked consuming");
-                this.state = ConveyorState.empty;
-                this.dockedConsuming.state = RobotState.filled;
-                this.dockedConsuming.behavior.proceed();
-                this.dockedConsuming = null;
+            if (this.score < PaintingCycleTime) {
+                this.score += fixedTimeStep;
+            }
+
+            if (this.score >= PaintingCycleTime) {
+                if (this.dockedConsuming != null) {
+                    console.log("docked consuming");
+                    this.state = ConveyorState.empty;
+                    this.dockedConsuming.state = RobotState.filled;
+                    this.dockedConsuming.behavior.proceed();
+                    this.dockedConsuming = null;
+                    this.score = 0;
+                }
             }
         }
 
@@ -79,11 +88,13 @@ class PaintingStation {
     }
 
     updateVisual() {
-        if (this.state === ConveyorState.filled) {
+        if (this.score >= PaintingCycleTime) {
             this.element.style.backgroundColor = "green";
         }
-
-        if (this.state === ConveyorState.empty) {
+        else if (this.score >= Math.round(PaintingCycleTime / 2)) {
+            this.element.style.backgroundColor = "yellow";
+        }
+        else if (this.state === ConveyorState.empty) {
             this.element.style.backgroundColor = "red";
         }
     }
@@ -227,7 +238,7 @@ class MoveToTargetBehavior {
         }
     }
 
-    proceed() {}
+    proceed() { }
 }
 
 class MoveBetweenTargetsBehavior {
@@ -250,7 +261,7 @@ class MoveBetweenTargetsBehavior {
             top > topTarget && top--;
             setPosition(robot.element, left, top);
         }
-        else if (this.targetReached === false){
+        else if (this.targetReached === false) {
             this.targetReached = true;
             this.targetFirst.onReachedTarget(robot);
         }
