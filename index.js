@@ -50,17 +50,21 @@ function moveRobot(robot, target) {
 
 async function main() {
     setInitalPositions();
-    await moveRobot(robot(1), conveyor(1));
-    await moveRobot(robot(2), stand());
-    await moveRobot(robot(3), conveyor(2));
+    await Promise.all([ 
+        moveRobot(robot(1), conveyor(1)),
+        moveRobot(robot(2), stand()),
+        moveRobot(robot(3), conveyor(2))
+    ])
 
     while(!stopped) {
-        await moveRobot(robot(3), stand());
-        await moveRobot(robot(3), conveyor(2));
-        await moveRobot(robot(2), stand());
-        await new Promise(resolve => setTimeout(resolve, 400));
-        await moveRobot(robot(1), stand());
-        await moveRobot(robot(1), conveyor(1));
+        await Promise.all([
+            moveRobot(robot(1), stand()),
+            moveRobot(robot(3), stand())
+        ]);
+        await Promise.all([
+            moveRobot(robot(1), conveyor(1)),
+            moveRobot(robot(3), conveyor(2))
+        ]);
     }
 }
 
