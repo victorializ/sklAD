@@ -89,13 +89,13 @@ class PaintingStation {
 
     updateVisual() {
         if (this.score >= PaintingCycleTime) {
-            this.element.style.backgroundColor = "green";
+            this.element.src = "assets/painter_table_with_painted_box.png"
         }
         else if (this.score >= Math.round(PaintingCycleTime / 2)) {
-            this.element.style.backgroundColor = "yellow";
+            this.element.src = "assets/painter_table_with_painted_box.png"
         }
         else if (this.state === ConveyorState.empty) {
-            this.element.style.backgroundColor = "red";
+            this.element.src = "assets/painter_table_empty.png"
         }
     }
 
@@ -128,11 +128,19 @@ class ProducingConveyor {
 
     updateVisual() {
         if (this.state === ConveyorState.filled) {
-            this.element.style.backgroundColor = "green";
+            if(this.element.id === "conveyor-1") {
+                this.element.src = "assets/lentochnyh-konveyer_notpainted_2.png";
+            } else if (this.element.id === "conveyor-2") {
+                this.element.src = "assets/lentochnyh-konveyer_painted_box_2_1.png";
+            }
         }
 
         if (this.state === ConveyorState.empty) {
-            this.element.style.backgroundColor = "red";
+            if(this.element.id === "conveyor-1") {
+                this.element.src = "assets/lentochnyh-konveyer_1_empty.png";
+            } else if (this.element.id === "conveyor-2") {
+                this.element.src = "assets/lentochnyh-konveyer_2_empty.png";
+            }
         }
     }
 
@@ -172,11 +180,19 @@ class ConsumingConveyor {
 
     updateVisual() {
         if (this.state === ConveyorState.filled) {
-            this.element.style.backgroundColor = "green";
+            if(this.element.id === "conveyor-1") {
+                this.element.src = "assets/lentochnyh-konveyer_notpainted_2.png";
+            } else if (this.element.id === "conveyor-2") {
+                this.element.src = "assets/lentochnyh-konveyer_painted_box_2_1.png";
+            }
         }
 
         if (this.state === ConveyorState.empty) {
-            this.element.style.backgroundColor = "red";
+            if(this.element.id === "conveyor-1") {
+                this.element.src = "assets/lentochnyh-konveyer_1_empty.png";
+            } else if (this.element.id === "conveyor-2") {
+                this.element.src = "assets/lentochnyh-konveyer_2_empty.png";
+            }
         }
     }
 
