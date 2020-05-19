@@ -1,5 +1,8 @@
 let stopped = true;
+let fire = false;
 let defaultBehaviorIsActive = false;
+
+let log = "";
 
 const ConveyorState = Object.freeze({ "empty": 1, "filled": 2 });
 const RobotState = Object.freeze({ "empty": 1, "carrying": 2 });
@@ -64,6 +67,7 @@ class PaintingStation {
                 this.dockedProducing.state = RobotState.empty;
                 this.dockedProducing?.updateVisual();
                 this.dockedProducing.behavior.proceed();
+                addLogRecord(this.dockedProducing.element.id + ": started moving to " + this.dockedProducing.behavior.targetFirst.element.id);
                 this.dockedProducing = null;
             }
         }
@@ -80,6 +84,7 @@ class PaintingStation {
                     this.dockedConsuming.state = RobotState.filled;
                     this.dockedConsuming?.updateVisual();
                     this.dockedConsuming.behavior.proceed();
+                    addLogRecord(this.dockedConsuming.element.id + ": started moving to " + this.dockedConsuming.behavior.targetFirst.element.id);
                     this.dockedConsuming = null;
                     this.score = 0;
                 }
@@ -90,14 +95,17 @@ class PaintingStation {
     }
 
     updateVisual() {
-        if (this.score >= PaintingCycleTime) {
+        if (this.score >= Math.round(PaintingCycleTime * 0.9)) {
             this.element.src = "assets/painter_table_with_painted_box.png"
         }
         else if (this.score >= Math.round(PaintingCycleTime / 2)) {
-            this.element.src = "assets/painter_table_with_painted_box.png"
+            this.element.src = "assets/painter_table_half_painted.png"
         }
         else if (this.state === ConveyorState.empty) {
             this.element.src = "assets/painter_table_empty.png"
+        }
+        else {
+            this.element.src = "assets/painter_table_with_not_painted_box.png"
         }
     }
 
@@ -130,7 +138,7 @@ class ProducingConveyor {
 
     updateVisual() {
         if (this.state === ConveyorState.filled) {
-            if(this.element.id === "conveyor-1") {
+            if (this.element.id === "conveyor-1") {
                 this.element.src = "assets/lentochnyh-konveyer_notpainted_2.png";
             } else if (this.element.id === "conveyor-2") {
                 this.element.src = "assets/lentochnyh-konveyer_painted_box_2_1.png";
@@ -138,7 +146,7 @@ class ProducingConveyor {
         }
 
         if (this.state === ConveyorState.empty) {
-            if(this.element.id === "conveyor-1") {
+            if (this.element.id === "conveyor-1") {
                 this.element.src = "assets/lentochnyh-konveyer_1_empty.png";
             } else if (this.element.id === "conveyor-2") {
                 this.element.src = "assets/lentochnyh-konveyer_2_empty.png";
@@ -160,6 +168,7 @@ class ProducingConveyor {
                 this.dockedRobot.state = RobotState.filled;
                 this.dockedRobot?.updateVisual();
                 this.dockedRobot.behavior.proceed();
+                addLogRecord(this.dockedRobot.element.id + ": started moving to " + this.dockedRobot.behavior.targetFirst.element.id);
                 this.dockedRobot = null;
                 this.state = ConveyorState.empty;
             }
@@ -183,7 +192,7 @@ class ConsumingConveyor {
 
     updateVisual() {
         if (this.state === ConveyorState.filled) {
-            if(this.element.id === "conveyor-1") {
+            if (this.element.id === "conveyor-1") {
                 this.element.src = "assets/lentochnyh-konveyer_notpainted_2.png";
             } else if (this.element.id === "conveyor-2") {
                 this.element.src = "assets/lentochnyh-konveyer_painted_box_2_1.png";
@@ -191,7 +200,7 @@ class ConsumingConveyor {
         }
 
         if (this.state === ConveyorState.empty) {
-            if(this.element.id === "conveyor-1") {
+            if (this.element.id === "conveyor-1") {
                 this.element.src = "assets/lentochnyh-konveyer_1_empty.png";
             } else if (this.element.id === "conveyor-2") {
                 this.element.src = "assets/lentochnyh-konveyer_2_empty.png";
@@ -213,6 +222,7 @@ class ConsumingConveyor {
                 this.dockedRobot.state = RobotState.empty;
                 this.dockedRobot?.updateVisual();
                 this.dockedRobot.behavior.proceed();
+                addLogRecord(this.dockedRobot.element.id + ": started moving to " + this.dockedRobot.behavior.targetFirst.element.id);
                 this.dockedRobot = null;
                 this.state = ConveyorState.filled;
             }
@@ -234,14 +244,14 @@ class Robot {
     }
 
     updateVisual() {
-        if(this.state === RobotState.empty) {
-            if(this.element.id === "robot-1") {
+        if (this.state === RobotState.empty) {
+            if (this.element.id === "robot-1") {
                 this.element.src = "assets/robot-1.png"
             } else {
                 this.element.src = "assets/robot-1_left.png"
             }
         } else {
-            if(this.element.id === "robot-1") {
+            if (this.element.id === "robot-1") {
                 this.element.src = "assets/robot-1_with_box_right.png"
             } else {
                 this.element.src = "assets/robot-1_with_painted_box.png"
@@ -257,6 +267,7 @@ class Robot {
 class MoveToTargetBehavior {
     constructor(target) {
         this.target = target;
+        this.targetReached = false;
     }
 
     performUpdate(robot) {
@@ -271,6 +282,11 @@ class MoveToTargetBehavior {
             top < topTarget && top++;
             top > topTarget && top--;
             setPosition(robot.element, left, top);
+        }
+        else if (this.targetReached === false) {
+            this.targetReached = true;
+            addLogRecord(robot.element.id + ": reached " + robot.behavior.target.id);
+            this.targetFirst.onReachedTarget(robot);
         }
     }
 
@@ -299,6 +315,7 @@ class MoveBetweenTargetsBehavior {
         }
         else if (this.targetReached === false) {
             this.targetReached = true;
+            addLogRecord(robot.element.id + ": reached " + robot.behavior.targetFirst.element.id);
             this.targetFirst.onReachedTarget(robot);
         }
     }
@@ -313,38 +330,94 @@ class MoveBetweenTargetsBehavior {
 function setDefaultBehavior() {
 
     robot1.setBehavior(new MoveBetweenTargetsBehavior(producingConveyor, paintingStation));
+    addLogRecord(robot1.element.id + ": started moving to " + robot1.behavior.targetFirst.element.id);
     robot2.setBehavior(new MoveToTargetBehavior(stand()));
+    addLogRecord(robot2.element.id + ": started moving to " + robot2.behavior.target.id);
     robot3.setBehavior(new MoveBetweenTargetsBehavior(paintingStation, consumingConveyor));
+    addLogRecord(robot3.element.id + ": started moving to " + robot3.behavior.targetFirst.element.id);
 
     defaultBehaviorIsActive = true;
 }
 
 function fireEvent() {
+    stopped = false;
+
     robot1.setBehavior(new MoveToTargetBehavior(zone()));
+    addLogRecord(robot1.element.id + ": started moving to " + robot1.behavior.target.id);
     robot2.setBehavior(new MoveToTargetBehavior(zone()));
+    addLogRecord(robot2.element.id + ": started moving to " + robot2.behavior.target.id);
     robot3.setBehavior(new MoveToTargetBehavior(zone()));
+    addLogRecord(robot3.element.id + ": started moving to " + robot3.behavior.target.id);
+
+    robot1.state = RobotState.empty;
+    robot1.updateVisual();
+    robot3.state = RobotState.empty;
+    robot3.updateVisual();
+
+    producingConveyor.dockedRobot = null;
+    consumingConveyor.dockedRobot = null;
+    paintingStation.dockedConsuming = null;
+    paintingStation.dockedProducing = null;
 
     defaultBehaviorIsActive = false;
+    fire = true;
+
+    addLogRecord("System: fire event started. All robots now proceed to safe zone and await start command.");
 }
 
 function startEvent() {
     if (stopped) {
         stopped = false;
-    } else if (!defaultBehaviorIsActive) {
-        setDefaultBehavior();
     }
+    if (fire) {
+        setDefaultBehavior();
+        fire = false;
+    }
+
+    addLogRecord("System: default behaviour started");
 }
 
 function paintsEvent() {
     if (defaultBehaviorIsActive) {
         stopped = true;
     }
+
+    addLogRecord("System: not enought paint event started. All robots await start command.");
 }
 
 function humanEvent() {
     if (defaultBehaviorIsActive) {
         stopped = true;
     }
+
+    addLogRecord("System: human event started. All robots await start command.");
+}
+
+function getFormattedDate() {
+    var d = new Date();
+
+    d = "[" + d.getFullYear() + "-" + ('0' + (d.getMonth() + 1)).slice(-2) + "-" + ('0' + d.getDate()).slice(-2) + " " + ('0' + d.getHours()).slice(-2) + ":" + ('0' + d.getMinutes()).slice(-2) + ":" + ('0' + d.getSeconds()).slice(-2) + "] ";
+
+    return d;
+}
+
+function addLogRecord(text) {
+    text = getFormattedDate() + text;
+    log += text;
+    log += "\n";
+}
+
+function download() {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(log));
+    element.setAttribute('download', "log.txt");
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
 }
 
 async function main() {
@@ -352,6 +425,7 @@ async function main() {
     document.getElementById("start").onclick = startEvent;
     document.getElementById("paints").onclick = paintsEvent;
     document.getElementById("human").onclick = humanEvent;
+    document.getElementById("logfile").onclick = download;
 
     setInitalPositions();
 
@@ -374,10 +448,12 @@ async function main() {
                     robot2.update();
                     robot3.update();
 
-                    producingConveyor.update();
-                    consumingConveyor.update();
+                    if (!fire) {
+                        producingConveyor.update();
+                        consumingConveyor.update();
 
-                    paintingStation.update();
+                        paintingStation.update();
+                    }
                 }
             }, fixedTimeStep);
         });
