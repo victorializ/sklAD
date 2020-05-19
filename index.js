@@ -62,6 +62,7 @@ class PaintingStation {
                 console.log("docked producing");
                 this.state = ConveyorState.filled;
                 this.dockedProducing.state = RobotState.empty;
+                this.dockedProducing?.updateVisual();
                 this.dockedProducing.behavior.proceed();
                 this.dockedProducing = null;
             }
@@ -77,6 +78,7 @@ class PaintingStation {
                     console.log("docked consuming");
                     this.state = ConveyorState.empty;
                     this.dockedConsuming.state = RobotState.filled;
+                    this.dockedConsuming?.updateVisual();
                     this.dockedConsuming.behavior.proceed();
                     this.dockedConsuming = null;
                     this.score = 0;
@@ -156,6 +158,7 @@ class ProducingConveyor {
         if (this.state === ConveyorState.filled) {
             if (this.dockedRobot !== null) {
                 this.dockedRobot.state = RobotState.filled;
+                this.dockedRobot?.updateVisual();
                 this.dockedRobot.behavior.proceed();
                 this.dockedRobot = null;
                 this.state = ConveyorState.empty;
@@ -208,6 +211,7 @@ class ConsumingConveyor {
         if (this.state === ConveyorState.empty) {
             if (this.dockedRobot !== null) {
                 this.dockedRobot.state = RobotState.empty;
+                this.dockedRobot?.updateVisual();
                 this.dockedRobot.behavior.proceed();
                 this.dockedRobot = null;
                 this.state = ConveyorState.filled;
@@ -227,6 +231,22 @@ class Robot {
 
     setBehavior(behavior) {
         this.behavior = behavior;
+    }
+
+    updateVisual() {
+        if(this.state === RobotState.empty) {
+            if(this.element.id === "robot-1") {
+                this.element.src = "assets/robot-1.png"
+            } else {
+                this.element.src = "assets/robot-1_left.png"
+            }
+        } else {
+            if(this.element.id === "robot-1") {
+                this.element.src = "assets/robot-1_with_box_right.png"
+            } else {
+                this.element.src = "assets/robot-1_with_painted_box.png"
+            }
+        }
     }
 
     update() {
