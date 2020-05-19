@@ -51,7 +51,6 @@ section {
 }
 
 div[id^="robot"] {
-    margin: 3px;
     font-size: 35px;
 }
 
